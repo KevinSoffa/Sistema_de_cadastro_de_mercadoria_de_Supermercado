@@ -19,4 +19,4 @@ CREATE TABLE IF NOT exists `produtos`(
 );
 
 INSERT INTO admin (nome,email,senha,status) VALUE ('kevin','kevin@gmail.com', '123456',1);
-SELECT * FROM admin;
+SELECT * FROM produtos;
