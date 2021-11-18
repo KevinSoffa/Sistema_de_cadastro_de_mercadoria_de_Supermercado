@@ -1,5 +1,8 @@
 import pymysql.cursors
+import main
 import time
+
+import main
 
 
 class admin():
@@ -24,13 +27,13 @@ class admin():
             print('\033[1;31mERRO ao conectar com o Banco de Dados\033[m')
 
     def login(self):
+        global autenticado
         self.conexao()
         time.sleep(2)
         print('\033[1;36;40m=== LOGIN ===\033[m')
         print('Para voltar ao Menu Principal digite 1')
         email = input('E-mail: ')
         senha = input('Senha: ')
-        autenticado = False
         try:
             with self.banco.cursor() as cursos:
                 cursos.execute('SELECT * FROM admin')
@@ -44,6 +47,7 @@ class admin():
                 autenticado = True
                 break
             else:
+                autenticado = False
                 pass
         if autenticado:
             time.sleep(0.5)
@@ -125,20 +129,116 @@ class admin():
             tipo = int(input('Tipo do produto [número]:'))
 
             dadosProdutos = [nome_produto, quantidade, tipo]
-            produtos(dadosProdutos).cadastrarProduto()
+            produtos().cadastrarProduto(dadosProdutos)
+        elif op == 2:
+            produtos().alterarDados()
+
+        elif op == 3:
+            produtos().deletarProdutos()
+
+        elif op == 4:
+            produtos().listarProdutos()
+
+        elif op == 0:
+            print('FINALIZANDO SERVIDOR...')
+            time.sleep(3)
+            print('Até Logo!!!')
 
 
 class produtos(admin):
-    def __init__(self, dadosProdutos):
-        self.dadosProdutos = dadosProdutos
+    def __init__(self,):
+        pass
 
-    def cadastrarProduto(self):
+    def cadastrarProduto(self, dadosProdutos):
         self.conexao()
         with self.banco.cursor() as cursos:
             sql = "INSERT INTO produtos (nomeProduto, quantidade, tipo) VALUES (%s, %s, %s)"
-            cursos.execute(sql, self.dadosProdutos)
+            cursos.execute(sql, dadosProdutos)
             self.banco.commit()
             print('\033[1;32mProduto Cadastrado!\033[m')
             time.sleep(1)
             self.menuAdmin()
+
+    def listarProdutos(self):
+        self.conexao()
+        try:
+            with self.banco.cursor() as cursos:
+                cursos.execute('SELECT * FROM produtos')
+                produtos = cursos.fetchall()
+
+        except:
+            print('\033[1;31mAlgo deu ERRADO :(\033[m')
+            print('\033[1;31mERRO ao conectar com o Banco de Dados - produtos\033[m')
+        print('=-' * 15)
+        print('\033[1;36;40m=== LISTA DE PRODUTOS ===\033[m')
+        print('(1. Alimento) | (2. Higiene) \n'
+              '(3. Limpeza   | (4. Outros)')
+        print('--' * 40)
+        for i in produtos:
+            if i['tipo'] == '1':
+                tipo = "ALIMENTO"
+            elif i['tipo'] == '2':
+                tipo = "HIGIENE"
+            elif i['tipo'] == '3':
+                tipo = "LIMPEZA"
+            else:
+                tipo = "OUTROS"
+            print('\033[1mID\033[m: {} | \033[1mProduto\033[m: {} | \033[1mQuantidade\033[m: {} | \033[1mTipo\033[m: {}'
+                  ' '.format(i['idProdutos'], i['nomeProduto'], i['quantidade'], i['tipo']))
+            print('--' * 40)
+            time.sleep(0.5)
+        try:
+            if autenticado:
+                self.menuAdmin()
+        except:
+            main.main()
+
+    def deletarProdutos(self):
+        self.conexao()
+        id = int(input('Digite o ID do produto a ser EXCLUIDO: '))
+        confirmacao = input(f'Tem certeza que deseja \033[1;31mEXCLUIR\033[m o produto de ID: {id}?[S|N]:').upper().strip()[0]
+        if confirmacao == 'S':
+            with self.banco.cursor() as cursos:
+                cursos.execute(f"DELETE FROM produtos WHERE idProdutos={id}")
+                self.banco.commit()
+                print('Produto DELETADO')
+                self.menuAdmin()
+        else:
+            self.deletarProdutos()
+
+    def alterarDados(self):
+        self.conexao()
+        id = int(input('Digite o ID do produto a ser alterado: '))
+        try:
+            with self.banco.cursor() as cursos:
+                cursos.execute('SELECT * FROM produtos WHERE idProdutos={}'.format(id))
+                produto = cursos.fetchall()
+
+        except:
+            print('\033[1;31mAlgo deu ERRADO :(\033[m')
+            print('\033[1;31mERRO ao conectar com o Banco de Dados - produtos\033[m')
+
+        nomeProduto = input('Novo nome do Produto ({}): '.format(produto[0]['nomeProduto']))
+        quantidade = int(input('Quantidade em estoque ({}): '.format(produto[0]['quantidade'])))
+        print('(1. Alimento) | (2. Higiene) \n'
+              '(3. Limpeza   | (4. Outros)')
+        categoria = int(input('Digite o Tipo ATUAL do produto: '))
+        if categoria == 1:
+            print(f'{nomeProduto} | 1. Alimento')
+        elif categoria == 2:
+            print(f'{nomeProduto} | 2. Higiene')
+        elif categoria == 3:
+            print(f'{nomeProduto} | 3. Limpeza')
+        elif categoria == 4:
+            print(f'{nomeProduto} | 4. Outros')
+        tipo = int(input('Digite o Novo tipo do produto: '))
+        with self.banco.cursor() as cursos:
+            cursos.execute("UPDATE produtos SET nomeProduto='{}', quantidade={}, tipo={} WHERE idProdutos={}".format(nomeProduto, quantidade, tipo, id))
+            self.banco.commit()
+            print(f'Produto:{nomeProduto} | Quantidade: {quantidade} | Tipo: {tipo}')
+            print('\033[1;32mProduto ALTERADO!\033[m')
+            time.sleep(1.5)
+            self.menuAdmin()
+
+
 

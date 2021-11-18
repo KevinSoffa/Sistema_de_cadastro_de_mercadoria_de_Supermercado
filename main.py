@@ -2,11 +2,10 @@
 import time
 import admin as adm
 
-print('\033[1;34;40m===> Supermercado SOFFA <===\033[m')
-time.sleep(0.7)
-
 
 def main():
+    print('\033[1;34;40m===> Supermercado SOFFA <===\033[m')
+    time.sleep(0.7)
     print('=-' * 15)
     print('{:^40}'.format('\033[1;36;40m===> OPÇÕES <===\033[m'))
     print('=-' * 15)
@@ -24,7 +23,7 @@ def main():
         adm.admin().cadastro()  # Cadastrar
 
     elif op == 3:
-        pass  # Ver produtos
+        adm.produtos().listarProdutos()  # Ver produtos
 
     else:
         print('FINALIZANDO SERVIDOR...')
