@@ -13,7 +13,7 @@
   <h1> Funções do sistema </h1>
   <h2> Menu Principal </h2>
   <li> Logar como admins </li>
-  <li> Cadastro de novos admin </li>
+  <li> Cadastro de novos admins </li>
   <li> Visualização do Estoque </li>
   <li> Sair </li>
   <hr>
